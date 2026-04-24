@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f1f5f9;
+  --color-text: #1e293b;
+  --color-text-muted: #64748b;
+  --color-border: #e2e8f0;
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+@layer base {
+  body {
+    @apply bg-background text-text antialiased;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-surface border border-border rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-primary-hover transition-all duration-200 px-6 py-3 rounded-xl font-semibold shadow-lg shadow-primary/20 active:scale-95;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 bg-surface border border-border rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all duration-200 text-text;
+  }
+}
