@@ -8,4 +8,11 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  preview: {
+    host: true, // or '0.0.0.0'
+    port: process.env.PORT || 4173,
+    allowedHosts: [
+      'lead-automation-frontend.onrender.com'
+    ]
+  }
 })
