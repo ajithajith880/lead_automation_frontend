@@ -10,7 +10,7 @@ const AdminVendorList = () => {
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // Modal & Form States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
@@ -67,7 +67,7 @@ const AdminVendorList = () => {
     { label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard', onClick: () => navigate('/admin/dashboard') },
     { label: 'Vendors', icon: ShoppingBag, path: '/admin/vendors', onClick: () => navigate('/admin/vendors') },
     { label: 'Subscriptions', icon: CreditCard, path: '/admin/subscriptions', onClick: () => navigate('/admin/subscriptions') },
-    { label: 'Users', icon: Users, path: '/admin/users', onClick: () => { } },
+    // { label: 'Users', icon: Users, path: '/admin/users', onClick: () => { } },
   ];
 
   return (
@@ -82,7 +82,7 @@ const AdminVendorList = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input type="text" placeholder="Search vendors..." className="pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:border-primary transition-all w-64 shadow-sm" />
           </div>
-          <button 
+          <button
             onClick={() => setIsModalOpen(true)}
             className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold shadow-md hover:bg-primary/90 transition-all active:scale-95"
           >
@@ -102,7 +102,7 @@ const AdminVendorList = () => {
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
               <p className="text-sm text-red-500 font-medium">{error}</p>
-              <button 
+              <button
                 onClick={() => window.location.reload()}
                 className="text-xs font-bold text-primary underline"
               >
@@ -154,16 +154,15 @@ const AdminVendorList = () => {
                         </div>
                       </td>
                       <td className="py-4 px-6 text-center">
-                        <select 
+                        <select
                           value={vendor.status}
                           onChange={(e) => handleStatusChange(vendor._id, e.target.value)}
-                          className={`appearance-none cursor-pointer px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border outline-none transition-all ${
-                            vendor.status === 'active' 
-                            ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100' 
+                          className={`appearance-none cursor-pointer px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border outline-none transition-all ${vendor.status === 'active'
+                            ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100'
                             : vendor.status === 'inactive'
-                            ? 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100'
-                            : 'bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100'
-                          }`}
+                              ? 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100'
+                              : 'bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100'
+                            }`}
                         >
                           <option value="active">Active</option>
                           <option value="inactive">Inactive</option>
@@ -210,14 +209,14 @@ const AdminVendorList = () => {
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsModalOpen(false)}
               className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
             />
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -234,7 +233,7 @@ const AdminVendorList = () => {
                       <p className="text-xs text-slate-500 font-medium">Add a new partner to the platform</p>
                     </div>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setIsModalOpen(false)}
                     className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
                   >
@@ -247,12 +246,12 @@ const AdminVendorList = () => {
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 px-1">Business Name</label>
                     <div className="relative">
                       <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input 
+                      <input
                         required
-                        type="text" 
+                        type="text"
                         value={formData.businessName}
-                        onChange={(e) => setFormData({...formData, businessName: e.target.value})}
-                        placeholder="e.g. Master Electronics" 
+                        onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+                        placeholder="e.g. Master Electronics"
                         className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-primary focus:bg-white transition-all shadow-sm"
                       />
                     </div>
@@ -261,23 +260,23 @@ const AdminVendorList = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 px-1">Email Address</label>
-                      <input 
+                      <input
                         required
-                        type="email" 
+                        type="email"
                         value={formData.email}
-                        onChange={(e) => setFormData({...formData, email: e.target.value})}
-                        placeholder="contact@shop.com" 
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        placeholder="contact@shop.com"
                         className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-primary focus:bg-white transition-all shadow-sm"
                       />
                     </div>
                     <div>
                       <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 px-1">Phone Number</label>
-                      <input 
+                      <input
                         required
-                        type="tel" 
+                        type="tel"
                         value={formData.phone}
-                        onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                        placeholder="+91 00000 00000" 
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        placeholder="+91 00000 00000"
                         className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-primary focus:bg-white transition-all shadow-sm"
                       />
                     </div>
@@ -287,12 +286,12 @@ const AdminVendorList = () => {
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 px-1">Initial Password</label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input 
+                      <input
                         required
-                        type="password" 
+                        type="password"
                         value={formData.password}
-                        onChange={(e) => setFormData({...formData, password: e.target.value})}
-                        placeholder="••••••••" 
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        placeholder="••••••••"
                         className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-primary focus:bg-white transition-all shadow-sm"
                       />
                     </div>
@@ -300,9 +299,9 @@ const AdminVendorList = () => {
 
                   <div>
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 px-1">Business Category</label>
-                    <select 
+                    <select
                       value={formData.category}
-                      onChange={(e) => setFormData({...formData, category: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-primary focus:bg-white transition-all shadow-sm appearance-none cursor-pointer"
                     >
                       <option value="Electronics">Electronics</option>
@@ -314,14 +313,14 @@ const AdminVendorList = () => {
                   </div>
 
                   <div className="pt-4 flex gap-3">
-                    <button 
+                    <button
                       type="button"
                       onClick={() => setIsModalOpen(false)}
                       className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all active:scale-95"
                     >
                       Cancel
                     </button>
-                    <button 
+                    <button
                       disabled={isRegistering}
                       type="submit"
                       className="flex-1 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"

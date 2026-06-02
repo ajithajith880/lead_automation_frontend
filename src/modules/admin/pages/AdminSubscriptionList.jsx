@@ -9,7 +9,7 @@ const AdminSubscriptionList = () => {
     { label: 'Dashboard', icon: LayoutDashboard, path: '/admin/dashboard', onClick: () => navigate('/admin/dashboard') },
     { label: 'Vendors', icon: ShoppingBag, path: '/admin/vendors', onClick: () => navigate('/admin/vendors') },
     { label: 'Subscriptions', icon: CreditCard, path: '/admin/subscriptions', onClick: () => navigate('/admin/subscriptions') },
-    { label: 'Users', icon: Users, path: '/admin/users', onClick: () => { } },
+    // { label: 'Users', icon: Users, path: '/admin/users', onClick: () => { } },
   ];
 
   const subscriptions = [

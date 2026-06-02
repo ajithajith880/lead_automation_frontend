@@ -9,13 +9,57 @@ import {
    Link,
    ChevronDown,
    Key,
-   Send
+   Send,
+   Code,
+   Copy,
+   Check,
+   Lock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import useAuthStore from '../../../store/authStore';
 
 const VendorAITraining = () => {
    const navigate = useNavigate();
+   const { user } = useAuthStore();
    const [selectedAI, setSelectedAI] = React.useState('gpt4');
+   const [content, setContent] = React.useState('');
+   const [loading, setLoading] = React.useState(false);
+   const [status, setStatus] = React.useState({ type: '', message: '' });
+   const [isTrained, setIsTrained] = React.useState(false);
+   const [copied, setCopied] = React.useState(false);
+
+   const handleCopy = () => {
+      const widgetCode = `<script src="https://lead-automation1-terp.onrender.com/static/widget.js" data-vendor-id="${user?._id || 'YOUR_VENDOR_ID'}"></script>`;
+      navigator.clipboard.writeText(widgetCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+   };
+
+   React.useEffect(() => {
+      const fetchKnowledgeBase = async () => {
+         const vendorId = user?._id || '12345';
+         try {
+            const response = await axios.get(`https://lead-automation1-terp.onrender.com/api/vendors/knowledge-base/${vendorId}`);
+            if (response.data && response.data.status && response.data.data) {
+               setContent(response.data.data.knowledge_base_content || '');
+               setIsTrained(response.data.data.is_trained === 1);
+            }
+         } catch (error) {
+            console.error('Error fetching knowledge base with clean URL:', error);
+            try {
+               const response = await axios.get(`https://lead-automation1-terp.onrender.com/api/vendors//knowledge-base/${vendorId}`);
+               if (response.data && response.data.status && response.data.data) {
+                  setContent(response.data.data.knowledge_base_content || '');
+                  setIsTrained(response.data.data.is_trained === 1);
+               }
+            } catch (err) {
+               console.error('Error fetching knowledge base with double-slash fallback:', err);
+            }
+         }
+      };
+      fetchKnowledgeBase();
+   }, [user?._id]);
 
    const menuItems = [
       { label: 'AI Dashboard', icon: BarChart3, path: '/vendor/dashboard', onClick: () => navigate('/vendor/dashboard') },
@@ -24,10 +68,50 @@ const VendorAITraining = () => {
       { label: 'Leads', icon: Users, path: '/vendor/leads', onClick: () => navigate('/vendor/leads') },
    ];
 
+   const handleStartTraining = async () => {
+      if (!content.trim()) {
+         setStatus({ type: 'error', message: 'Please provide some training content first.' });
+         return;
+      }
+
+      setLoading(true);
+      setStatus({ type: '', message: '' });
+
+      const vendorId = user?._id || '12345';
+
+      try {
+         const { data } = await axios.post('https://lead-automation1-terp.onrender.com/api/vendors/train-knowledge-base', {
+            vendor_id: vendorId,
+            content: content
+         });
+
+         if (data.status) {
+            setStatus({
+               type: 'success',
+               message: data.message || 'Training completed successfully!'
+            });
+            setIsTrained(true);
+         } else {
+            setStatus({
+               type: 'error',
+               message: data.message || 'Training failed. Please try again.'
+            });
+         }
+      } catch (error) {
+         console.error('AI Training Error:', error);
+         setStatus({
+            type: 'error',
+            message: error.response?.data?.message || error.message || 'Connection failed. Please check your network.'
+         });
+      } finally {
+         setLoading(false);
+      }
+   };
+
    return (
       <DashboardLayout role="vendor" menuItems={menuItems}>
          <header className="mb-10">
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">AI Training & Knowledge</h1>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">AI - Knowledge Training (for widget) </h1>
             <p className="text-sm text-slate-500 font-medium">Connect your AI models and provide business intelligence</p>
          </header>
 
@@ -38,30 +122,47 @@ const VendorAITraining = () => {
                   <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest mb-6 border-b border-slate-50 pb-4">Provide Training Data</h2>
 
                   <div className="space-y-6">
+                     {status.message && (
+                        <div className={`p-4 rounded-xl border flex items-center gap-3 transition-all duration-300 animate-in fade-in slide-in-from-top-4 ${status.type === 'success'
+                           ? 'bg-emerald-50 border-emerald-100 text-emerald-800'
+                           : 'bg-rose-50 border-rose-100 text-rose-800'
+                           }`}>
+                           <div className={`w-2 h-2 rounded-full ${status.type === 'success' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                           <p className="text-xs font-bold tracking-wide uppercase">{status.message}</p>
+                        </div>
+                     )}
+
                      {/* Big Text Area */}
                      <div className="space-y-2">
                         <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1 italic">Knowledge Base Text</label>
                         <textarea
+                           value={content}
+                           onChange={(e) => setContent(e.target.value)}
                            className="w-full h-64 p-6 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-primary focus:bg-white transition-all text-sm leading-relaxed text-slate-700 placeholder:text-slate-300 resize-none font-medium italic"
                            placeholder="Paste your product details, FAQs, business policies, and any other text documents here to train your AI..."
+                           disabled={loading}
                         />
                      </div>
 
-                     {/* Image Upload */}
-                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1 italic">Upload Documents (Images/PDFs)</label>
-                        <div className="border-2 border-dashed border-slate-100 rounded-2xl p-10 flex flex-col items-center justify-center bg-slate-50/50 hover:bg-slate-50 hover:border-primary/30 transition-all cursor-pointer group">
-                           <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-md mb-4 group-hover:scale-110 transition-transform">
-                              <Upload className="w-6 h-6 text-primary" />
-                           </div>
-                           <p className="text-sm font-bold text-slate-800">Drop files here or click to browse</p>
-                           <p className="text-[10px] text-slate-400 mt-1 uppercase font-black">Supported: JPEG, PNG, PDF (Max 20MB)</p>
-                        </div>
-                     </div>
-
-                     <button className="flex items-center justify-center gap-2 w-full py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-xl hover:bg-slate-800 transition-all">
-                        <Send className="w-5 h-5 translate-x-1 -translate-y-1" />
-                        <span>Start AI Training Process</span>
+                     <button
+                        onClick={handleStartTraining}
+                        disabled={loading || !content.trim()}
+                        className="flex items-center justify-center gap-2 w-full py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-xl hover:bg-slate-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-98"
+                     >
+                        {loading ? (
+                           <>
+                              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              <span>Training AI Chatbot...</span>
+                           </>
+                        ) : (
+                           <>
+                              <Send className="w-5 h-5 translate-x-1 -translate-y-1" />
+                              <span>Start AI Training Process</span>
+                           </>
+                        )}
                      </button>
                   </div>
                </div>
@@ -69,57 +170,92 @@ const VendorAITraining = () => {
 
             {/* AI Connection Settings */}
             <div className="space-y-6">
-               <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm ring-4 ring-primary/5">
-                  <div className="flex items-center gap-3 mb-8">
-                     <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
-                        <Link className="w-5 h-5" />
+
+               {/* Web Chat Widget Card */}
+               <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden ring-4 ring-primary/5">
+                  <div className="flex items-center gap-3 mb-6">
+                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg ${isTrained ? 'bg-emerald-600 shadow-emerald-600/20' : 'bg-slate-300 shadow-slate-300/20'}`}>
+                        <Code className="w-5 h-5" />
                      </div>
-                     <h3 className="font-bold text-lg text-slate-900">Connect AI</h3>
+                     <div>
+                        <h3 className="font-bold text-lg text-slate-900 font-sans">Web Chat Widget</h3>
+                        <p className="text-xs text-slate-500 font-medium font-bold">Deploy on your website</p>
+                     </div>
                   </div>
 
-                  <div className="space-y-6">
-                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Select AI Model</label>
-                        <div className="relative group">
-                           <select
-                              value={selectedAI}
-                              onChange={(e) => setSelectedAI(e.target.value)}
-                              className="w-full pl-5 pr-10 py-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-primary appearance-none font-bold text-slate-700 text-sm cursor-pointer"
-                           >
-                              <option value="gpt4">OpenAI GPT-4 Turbo</option>
-                              <option value="claude3">Anthropic Claude 3</option>
-                              <option value="gemini">Google Gemini Pro</option>
-                              <option value="llama3">Meta Llama 3 (Self-Hosted)</option>
-                           </select>
-                           <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none group-focus-within:rotate-180 transition-transform" />
+                  {!isTrained ? (
+                     <div className="space-y-4">
+                        <div className="p-6 bg-slate-50 rounded-xl border border-slate-100 flex flex-col items-center text-center">
+                           <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+                              <Lock className="w-5 h-5 text-slate-400" />
+                           </div>
+                           <p className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Widget Locked</p>
+                           <p className="text-[11px] text-slate-400 font-bold max-w-[200px]">
+                              Train your AI chatbot first to unlock your custom chat widget code snippet.
+                           </p>
                         </div>
+                        <button
+                           disabled
+                           className="w-full py-4 bg-slate-100 text-slate-400 rounded-xl font-bold cursor-not-allowed text-xs uppercase tracking-wider"
+                        >
+                           Waiting for AI Training
+                        </button>
                      </div>
-
-                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">API Key</label>
-                        <div className="relative">
-                           <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                           <input
-                              type="password"
-                              placeholder="sk-••••••••••••••••"
-                              className="w-full pl-11 pr-5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-primary font-mono text-xs"
-                           />
-                        </div>
-                     </div>
-
-                     <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
-                        <p className="text-[10px] text-blue-600 font-bold leading-relaxed italic">
-                           Your API key is stored securely and never shared with 3rd parties. Connection is over TLS 1.3 encryption.
+                  ) : (
+                     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        <p className="text-xs text-slate-600 font-medium leading-relaxed font-semibold">
+                           Copy and paste this script tag right before the closing <code className="bg-slate-100 px-1.5 py-0.5 rounded text-indigo-600 font-mono text-[10px] font-bold">&lt;/body&gt;</code> tag on your website:
                         </p>
+
+                        <div className="relative">
+                           <pre className="p-4 bg-slate-950 text-slate-200 rounded-xl font-mono text-[11px] leading-relaxed overflow-x-auto whitespace-pre-wrap break-all pr-12 border border-slate-800">
+                              <span className="text-slate-500">&lt;</span>
+                              <span className="text-pink-400">script</span>{' '}
+                              <span className="text-amber-300">src</span>
+                              <span className="text-slate-400">=</span>
+                              <span className="text-emerald-400">"https://lead-automation1-terp.onrender.com/static/widget.js"</span>{' '}
+                              <span className="text-amber-300">data-vendor-id</span>
+                              <span className="text-slate-400">=</span>
+                              <span className="text-emerald-400">"{user?._id || 'YOUR_VENDOR_ID'}"</span>
+                              <span className="text-slate-500">&gt;&lt;/</span>
+                              <span className="text-pink-400">script</span>
+                              <span className="text-slate-500">&gt;</span>
+                           </pre>
+                           <button
+                              onClick={handleCopy}
+                              className="absolute right-3 top-3 p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-all active:scale-95"
+                              title="Copy code"
+                           >
+                              {copied ? (
+                                 <Check className="w-4 h-4 text-emerald-400" />
+                              ) : (
+                                 <Copy className="w-4 h-4" />
+                              )}
+                           </button>
+                        </div>
+
+                        <button
+                           onClick={handleCopy}
+                           className={`w-full py-4 rounded-xl font-bold transition-all text-xs uppercase tracking-wider shadow-md flex items-center justify-center gap-2 ${copied
+                              ? 'bg-emerald-600 text-white shadow-emerald-600/20'
+                              : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-600/20'
+                              }`}
+                        >
+                           {copied ? (
+                              <>
+                                 <Check className="w-4 h-4" />
+                                 <span>Copied to Clipboard!</span>
+                              </>
+                           ) : (
+                              <>
+                                 <Copy className="w-4 h-4" />
+                                 <span>Copy Widget Code</span>
+                              </>
+                           )}
+                        </button>
                      </div>
-
-                     <button className="w-full py-4 border-2 border-primary text-primary hover:bg-primary hover:text-white rounded-xl font-bold transition-all shadow-md">
-                        Establish Connection
-                     </button>
-                  </div>
+                  )}
                </div>
-
-
             </div>
          </div>
       </DashboardLayout>
